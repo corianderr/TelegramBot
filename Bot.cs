@@ -34,12 +34,12 @@ namespace cw69
             {
                 Message message = messageEventArgs.Message;
                 Console.WriteLine(message.Text);
-                if (message.Text == "/game")
+                if (message.Text == "/game" || message.Text == "Повторить")
                 {
                     var botsChoice = RandomChoice();
                     var markup = new InlineKeyboardMarkup(new[]
                     {
-                       new InlineKeyboardButton(){Text = "Rock", CallbackData = RockPaperScissors(botsChoice, "rock"), },
+                       new InlineKeyboardButton(){Text = "Rock", CallbackData = RockPaperScissors(botsChoice, "rock") },
                        new InlineKeyboardButton(){Text = "Paper", CallbackData = RockPaperScissors(botsChoice, "paper")},
                        new InlineKeyboardButton(){Text = "Scissors", CallbackData = RockPaperScissors(botsChoice, "scissors")}
                     });
@@ -64,6 +64,15 @@ namespace cw69
                         "в случайном порядке одну из трех позиций, камень, ножницы или бумага, в свою очередь вы загадываете свою позицию, " +
                         "выбирая одну из кнопок. После вашего хода, бот выведет сообщение о том что он загадал, а также кто из вас победил. нажмите /game, чтобы начать игру.", replyMarkup: markup);
                 }
+                else if (message.Text == "Завершить")
+                {
+                    var markup = new ReplyKeyboardMarkup(new[]
+                    {
+                       new KeyboardButton("/help"),
+                       new KeyboardButton("/game"),
+                    });
+                    await _bot.SendTextMessageAsync(message.Chat.Id, "Благодарю за игру! Возвращайтесь, когда будет скучно!", replyMarkup: markup);
+                }
                 else
                 {
                     await _bot.SendTextMessageAsync(message.Chat.Id, "You should enter /game to start the game");
@@ -73,6 +82,16 @@ namespace cw69
             {
                 Console.WriteLine(e);
             }
+        }
+        public async Task<string> GetMessage(string s, long id)
+        {
+            var markup = new ReplyKeyboardMarkup(new[]
+            {
+                new KeyboardButton("Повторить"),
+                new KeyboardButton("Завершить"),
+            });
+            await _bot.SendTextMessageAsync(id, s, replyMarkup: markup);
+            return s;
         }
         public static string RandomChoice()
         {
@@ -90,18 +109,23 @@ namespace cw69
         public static string RockPaperScissors(string first, string second)
         => (first, second) switch
         {
-            ("rock", "paper") => "rock is covered by paper. Your paper wins.",
-            ("rock", "scissors") => "rock breaks scissors. My rock wins.",
-            ("paper", "rock") => "paper covers rock. My paper wins.",
-            ("paper", "scissors") => "paper is cut by scissors. Your scissors wins.",
-            ("scissors", "rock") => "scissors is broken by rock. Your rock wins.",
-            ("scissors", "paper") => "scissors cuts paper. My scissors wins.",
-            (_, _) => "tie"
+            ("rock", "paper") => "Rock is covered by paper. Your paper wins.",
+            ("rock", "scissors") => "Rock breaks scissors. My rock wins.",
+            ("paper", "rock") => "Paper covers rock. My paper wins.",
+            ("paper", "scissors") => "Paper is cut by scissors. Your scissors wins.",
+            ("scissors", "rock") => "Scissors is broken by rock. Your rock wins.",
+            ("scissors", "paper") => "Scissors cuts paper. My scissors wins.",
+            (_, _) => "Tie"
         };
         private async void HandleCallbackQuery(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
         {
-            await _bot.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id,
-                callbackQueryEventArgs.CallbackQuery.Data);
+            var markup = new ReplyKeyboardMarkup(new[]
+            {
+                new KeyboardButton("Повторить"),
+                new KeyboardButton("Завершить"),
+            });
+            await _bot.SendTextMessageAsync(callbackQueryEventArgs.CallbackQuery.Message.Chat.Id,
+                callbackQueryEventArgs.CallbackQuery.Data, replyMarkup: markup);
             await _bot.EditMessageReplyMarkupAsync(callbackQueryEventArgs.CallbackQuery.Message.Chat.Id,
                 callbackQueryEventArgs.CallbackQuery.Message.MessageId, null);
         }
