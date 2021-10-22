@@ -83,16 +83,6 @@ namespace cw69
                 Console.WriteLine(e);
             }
         }
-        public async Task<string> GetMessage(string s, long id)
-        {
-            var markup = new ReplyKeyboardMarkup(new[]
-            {
-                new KeyboardButton("Повторить"),
-                new KeyboardButton("Завершить"),
-            });
-            await _bot.SendTextMessageAsync(id, s, replyMarkup: markup);
-            return s;
-        }
         public static string RandomChoice()
         {
             Random r = new Random();
